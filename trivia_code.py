@@ -1,7 +1,5 @@
 import random
 
-game_running = True
-
 def player_names(number_of_players):
     names_list = ()
     print("\nPlease input the players'names in playing order")
@@ -19,14 +17,14 @@ def player_names(number_of_players):
 def draw_question(question_number,category,special): #Continue to make questions
     questions_sports = [["Which Club has the most Champions League trofies?\nA) Milan FC\nB) Real Madrid\nC) Barcelona\nD) Manchester United ","B"],\
                         ["Who was the first 7 time F1 world champion?\nA) Lewis Hamilton FC\nB) Max Vestappen\nC) Michael Shumacher\nD)Ayrton Senna ","C"]]
+    
+    special_sports_questions = [["Who is the Champions Legue's top Scorer of all time?\nA) Cristiano Ronaldo\nB) Lionel Messi\nC) Robert Lewandauski\nD) Neymar Jr","A"],\
+                                ["Which country has won the most FIFA World Cup titles in men's football?\nA) Brazil\nB)Germany\nC) France\nD)Argentina ","A"]]
     if category == "Sports" and not special:
         return questions_sports[question_number-1]
+    elif category == "Sports" and special:
+        return special_sports_questions[question_number-1]
 
-def scores(player_name,player_list):
-    scores = {}
-    for names in player_list:
-        scores[names] = [0,0]
-    return scores[player_name]
 
 def game():
     print("Welcome to the Trivia Game")
@@ -55,14 +53,19 @@ def game():
         except:
             print("The input was not a possible number of players.\n")
 
+
     playing_player = 1
+    streak = 0
     name_list = player_names(number_of_players)
+    scores = {}
+    for names in name_list:
+        if names not in scores:
+            scores[names] = [0,0]
+    game_running = True
     while game_running:
         name = name_list[playing_player-1]
-        streak = 0
         special = False
         print(f"\n{name} it's your turn\n")
-        player_score = scores(name,name_list)
         question_number = random.randint(1,number_of_questions)
         if streak == 2:
             special = True
@@ -71,28 +74,29 @@ def game():
         print(question)
         guess = input("\nANSWER: ")
         if guess == answer and not special:
-            print(f"You are correct, the answer was: {answer}.")
+            print(f"You are correct, the answer was: {answer}")
             streak +=1
-            player_score[0] += 1
+            scores[name][0] += 1
             
         elif guess == answer and  special:
-            print(f"You are correct, the answer was: {answer}.")
+            print(f"You are correct, the answer was: {answer}")
+            streak = 0
+            scores[name][1] += 1
             if playing_player +1 <= number_of_players:
                 playing_player += 1
             else:
                 playing_player = 1
-            sreak = 0
-            player_score[1] += 1
+            
         else:
-            print(f"Wrong answer, the answer was: {answer}.")
+            print(f"Wrong answer, the answer was: {answer}")
+            streak = 0
             if playing_player +1 <= number_of_players:
                 playing_player += 1
             else:
                 playing_player = 1
-            sreak = 0
-    if player_score == [7,3]:
-        print(f"Congrats {name} you won")
-        game_running == False
 
+        if scores[name][0]>=7 and scores[name][1]>=3:
+            print(f"Congrats {name} you won")
+            game_running = False
+        print (name,scores[name])
 start_game = game()
-print(start_game)
