@@ -1,16 +1,41 @@
 import random
+import json
 '''
 A fazer: Aumentar base de dados
+
+Traceback (most recent call last):
+  File "/Users/martimoliveira/Documents/GitHub/Trivia/trivia_code.py", line 203, in <module>
+    start_game = game()
+                 ^^^^^^
+  File "/Users/martimoliveira/Documents/GitHub/Trivia/trivia_code.py", line 143, in game
+    question = draw_question(question_number,chosen_category,special)[0]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/martimoliveira/Documents/GitHub/Trivia/trivia_code.py", line 62, in draw_question
+    return special_sports_questions[question_number-1]
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+IndexError: list index out of range
+
+When trying to get the 2nd right in a row
 '''
 questions_sports = [["Which Club has the most Champions League trofies?\nA) Milan FC\nB) Real Madrid\nC) Barcelona\nD) Manchester United ","B"],\
-                        ["Who was the first 7 time F1 world champion?\nA) Lewis Hamilton FC\nB) Max Vestappen\nC) Michael Shumacher\nD)Ayrton Senna ","C"]]
+                    ["Who was the first 7 time F1 world champion?\nA) Lewis Hamilton FC\nB) Max Vestappen\nC) Michael Shumacher\nD)Ayrton Senna ","C"],\
+                    ["Which sport is known as 'The Beautiful Game'?\nA) Cricket\nB) Basketball\nC) Soccer\nD) Tennis ", "C"],
+                    ["How many players are there in a soccer team on the field?\nA) 9\nB) 10\nC) 11\nD) 12 ", "C"],
+                    ["Which sport uses a bat and a ball?\nA) Soccer\nB) Cricket\nC) Tennis\nD) Swimming ", "B"],
+                    ["What color flag is waved in Formula 1 to indicate the race is over?\nA) Red\nB) Green\nC) Yellow\nD) Checkered ", "D"],
+                    ["Which country hosts the Tour de France?\nA) Italy\nB) Spain\nC) France\nD) Germany ", "C"],
+                    ["How many points is a touchdown worth in American football?\nA) 5\nB) 6\nC) 7\nD) 3 ", "B"],
+                    ["Which sport is played at Wimbledon?\nA) Basketball\nB) Soccer\nC) Tennis\nD) Golf ", "C"],
+                    ["What is the shape of a standard soccer ball?\nA) Square\nB) Round\nC) Oval\nD) Triangle ", "B"],
+                    ["What is the main piece of equipment used in golf?\nA) Racket\nB) Bat\nC) Club\nD) Paddle ", "C"],
+                    ["Which sport involves shooting an arrow at a target?\nA) Fencing\nB) Archery\nC) Shooting\nD) Golf ", "B"]]
     
 special_sports_questions = [["Who is the Champions Legue's top Scorer of all time?\nA) Cristiano Ronaldo\nB) Lionel Messi\nC) Robert Lewandauski\nD) Neymar Jr","A"],\
-                                ["Which country has won the most FIFA World Cup titles in men's football?\nA) Brazil\nB)Germany\nC) France\nD)Argentina ","A"]]
+                            ["Which country has won the most FIFA World Cup titles in men's football?\nA) Brazil\nB)Germany\nC) France\nD)Argentina ","A"]]
 
 def player_names(number_of_players):
     names_list = ()
-    print("\nPlease input the players'names in playing order")
+    print("\nPlease input the players' names in playing order")
     for i in range(number_of_players):
         name = input("What is the player's name? ")
         if name not in names_list:
@@ -22,12 +47,53 @@ def player_names(number_of_players):
         
     return names_list
 
+def default_info():
+    categories = ("Sports","History","Culture","All")
+    
+    while True:
+        chosen_category =  input('\nCategory options: "Sports", "History", "Culture", "All" \n\nWhat is the category you wish to play? ')
+        if chosen_category not in categories:
+            print("The input was not a possible category.\n")
+        else:
+            break
+
+    while True:
+        number_of_players = (input("\nHow many players are there in this game? "))
+        try:
+            number_of_players = int(number_of_players)
+            if 2<= number_of_players:
+                break
+            print("At least 2 players.")
+        except:
+            print("The input was not a possible number of players.\n")
+
+    streak = 0
+    playing_player = 1
+    name_list = player_names(number_of_players)
+    scores = {}
+    done_questions = []
+    done_special_questions = []
+    for names in name_list:
+        if names not in scores:
+            scores[names] = [0,0]
+
+    default_information = {"chosen_category": chosen_category,
+                           "number_of_players":number_of_players,
+                            "name_list": name_list,
+                            "playing_player": playing_player,
+                            "streak": streak,
+                            "done_questions": done_questions,
+                            "done_special_questions": done_special_questions,
+                            "scores":scores
+                            }
+    return default_information
+
 def ending_the_game(scores,name_list):
     tie_braking_points = []
     for points in scores.values():
         tie_braking_points.append(points[0]+ 2 * points[1])
     winner_points = 0
-    for winner,j in enumerate(tie_braking_points):  
+    for j in tie_braking_points:  
         if j > winner_points:
             winner_points = j
     multiple_winners=[]
@@ -66,38 +132,39 @@ def game():
     print("6. The youngest player will start the game and after the game will continue clockwise.")
     print("7. If you end the game early, wins whoever has the most tiebraker points: question points + special question points (are worth 2 tiebraker points)\n")
     print('If you want to end the game answer "quit" to any question')
+    print('If you want to save the game answer "save" to any question')
 
-    categories = ("Sports","History","Culture","All")
-    
     while True:
-        chosen_category =  input('\nCategory options: "Sports", "History", "Culture", "All" \n\nWhat is the category you wish to play? ')
-        if chosen_category not in categories:
-            print("The input was not a possible category.\n")
-        else:
+        load = input("\nDo you wish to load a save file? ")
+        if load == "yes":
+            information =load_game()
+            chosen_category = information["chosen_category"]
+            number_of_players = information["number_of_players"]
+            name_list = information["name_list"]
+            playing_player = information["playing_player"]
+            streak = information["streak"]
+            done_questions = information["done_questions"]
+            done_special_questions = information["done_special_questions"]
+            scores = information["scores"]
             break
+        elif load == "no":
+            information = default_info()
+            chosen_category = information["chosen_category"]
+            number_of_players = information["number_of_players"]
+            name_list = information["name_list"]
+            playing_player = information["playing_player"]
+            streak = information["streak"]
+            done_questions = information["done_questions"]
+            done_special_questions = information["done_special_questions"]
+            scores = information["scores"]
+            break
+        else:
+            print("Invalid input answer (yes/no)")
     
-    while True:
-        number_of_players = (input("\nHow many players are there in this game? "))
-        try:
-            number_of_players = int(number_of_players)
-            if 2<= number_of_players:
-                break
-            print("At least 2 players.")
-        except:
-            print("The input was not a possible number of players.\n")
 
-    streak = 0
-    playing_player = 1
-    name_list = player_names(number_of_players)
-    scores = {}
-    done_questions = []
-    done_special_questions = []
-    for names in name_list:
-        if names not in scores:
-            scores[names] = [0,0]
     game_running = True
-
     while game_running:
+
         name = name_list[playing_player-1]
         special = False
         num_questions = number_of_questions(chosen_category,special)
@@ -133,6 +200,10 @@ def game():
                 tie_breaker = ending_the_game(scores,name_list)
                 print(tie_breaker)
                 break
+            elif guess == "save":
+                save = save_game(chosen_category,number_of_players,name_list,playing_player,streak,done_questions,done_special_questions,scores)
+                print("\nGame saved successfully.\n")
+                break
 
             elif guess.upper() == answer.upper() and not special:
                 print(f"You are correct, the answer was: {answer}")
@@ -162,6 +233,24 @@ def game():
             print(f"\nCongrats {name}you won, your score was {scores[name]}")
             game_running = False
 
-        
+def save_game(chosen_category,number_of_players,name_list,playing_player,streak,done_questions,done_special_questions,scores):
+    data_to_save = {"chosen_category": chosen_category,
+                    "number_of_players":number_of_players,
+                    "name_list": name_list,
+                    "playing_player": playing_player,
+                    "streak": streak,
+                    "done_questions": done_questions,
+                    "done_special_questions": done_special_questions,
+                    "scores":scores
+                    }
+    with open("save_file_trivia.json","w") as file:
+        json.dump(data_to_save, file)  
+
+def load_game():
+    with open("save_file_trivia.json", "r") as file:
+        loaded_data = json.load(file)
+    print("Loaded data:", loaded_data)
+    return loaded_data
+
 
 start_game = game()
